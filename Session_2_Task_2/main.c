@@ -74,8 +74,9 @@
 /* Constants for the ComTest demo application tasks. */
 #define mainCOM_TEST_BAUD_RATE	( ( unsigned long ) 115200 )
 
-TaskHandle_t Toggle_Task_Handdler = NULL;
-
+TaskHandle_t Toggle_Task_1_Handdler = NULL;
+TaskHandle_t Toggle_Task_2_Handdler = NULL;
+TaskHandle_t Toggle_Task_3_Handdler = NULL;
 /*
  * Configure the processor for use with the Keil demo board.  This is very
  * minimal as most of the setup is managed by the settings in the project
@@ -90,18 +91,47 @@ static void prvSetupHardware( void );
  * Starts all the other tasks, then starts the scheduler. 
  */
 
-void Toggle_Task( void * pvParameters )
+void Toggle_Task_1( void * pvParameters )
 {
  
 
     for( ;; )
     {
 		  GPIO_write(PORT_0,PIN0,PIN_IS_LOW);
-			vTaskDelay(1000);
-			 GPIO_write(PORT_0,PIN0,PIN_IS_HIGH);
-			vTaskDelay(1000);
+		  vTaskDelay(100);
+		  GPIO_write(PORT_0,PIN0,PIN_IS_HIGH);
+		 vTaskDelay(100);
     }
 }
+
+void Toggle_Task_2( void * pvParameters )
+{
+ 
+
+    for( ;; )
+    {
+		  GPIO_write(PORT_0,PIN1,PIN_IS_LOW);
+		  vTaskDelay(500);
+		  GPIO_write(PORT_0,PIN1,PIN_IS_HIGH);
+		  vTaskDelay(500);
+    }
+}
+
+void Toggle_Task_3( void * pvParameters )
+{
+ 
+
+    for( ;; )
+    {
+		  GPIO_write(PORT_0,PIN2,PIN_IS_LOW);
+		  vTaskDelay(1000);
+		  GPIO_write(PORT_0,PIN2,PIN_IS_HIGH);
+		  vTaskDelay(1000);
+    }
+}
+
+
+
 
 
 
@@ -117,13 +147,27 @@ int main( void )
 	
 	
 	  xTaskCreate(
-                    Toggle_Task,       /* Function that implements the task. */
-                    "Toggle Task",          /* Text name for the task. */
+                    Toggle_Task_1,       /* Function that implements the task. */
+                    "Toggle Task_1",          /* Text name for the task. */
                     100,      /* Stack size in words, not bytes. */
                     ( void * ) 0,    /* Parameter passed into the task. */
                     1,/* Priority at which the task is created. */
-                    &Toggle_Task_Handdler );      /* Used to pass out the created task's handle. */
-		
+                    &Toggle_Task_1_Handdler );      /* Used to pass out the created task's handle. */
+	xTaskCreate(
+                    Toggle_Task_2,       /* Function that implements the task. */
+                    "Toggle Task_2",          /* Text name for the task. */
+                    100,      /* Stack size in words, not bytes. */
+                    ( void * ) 0,    /* Parameter passed into the task. */
+                    1,/* Priority at which the task is created. */
+                    &Toggle_Task_2_Handdler );      /* Used to pass out the created task's handle. */
+	xTaskCreate(
+                    Toggle_Task_3,       /* Function that implements the task. */
+                    "Toggle Task_3",          /* Text name for the task. */
+                    100,      /* Stack size in words, not bytes. */
+                    ( void * ) 0,    /* Parameter passed into the task. */
+                    1,/* Priority at which the task is created. */
+                    &Toggle_Task_3_Handdler );      /* Used to pass out the created task's handle. */
+										
 		
  										
 
