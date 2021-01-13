@@ -133,12 +133,12 @@ void Case_1( void * pvParameters )
 			if( Counter < 2000) {
 				GPIO_write(PORT_0,PIN1,PIN_IS_LOW);
 			}
-			else if( Counter >= 2000 && Counter < 4000) {
+			else if( Counter >= 2000 && Counter <= 4000) {
 				GPIO_write(PORT_0,PIN1,PIN_IS_HIGH);
 				vTaskDelay(400);
 				 GPIO_write(PORT_0,PIN1,PIN_IS_LOW);
 				vTaskDelay(400);
-			} else if(  Counter >= 4000) {
+			} else if(  Counter > 4000) {
 				GPIO_write(PORT_0,PIN1,PIN_IS_HIGH);
 				vTaskDelay(100);
 				 GPIO_write(PORT_0,PIN1,PIN_IS_LOW);
