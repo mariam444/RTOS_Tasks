@@ -1,5 +1,3 @@
-
-  
 /*
  * FreeRTOS Kernel V10.2.0
  * Copyright (C) 2019 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
@@ -75,10 +73,17 @@
 
 /* Constants for the ComTest demo application tasks. */
 #define mainCOM_TEST_BAUD_RATE	( ( unsigned long ) 115200 )
-	
 
-/*Task Handler*/
-TaskHandle_t Toggle_Task_Handdler = NULL;
+	
+	/*g_status_Button return status of button*/
+pinState_t g_status_Button; 
+unsigned int g_flag=0 , g_Enter = 0;
+
+/*Tasks Handler*/
+TaskHandle_t Button_Task_Handdler = NULL;
+TaskHandle_t Led_Task_Handdler = NULL;
+TaskHandle_t Led_Action_Task_Handdler = NULL;
+
 
 /*
  * Configure the processor for use with the Keil demo board.  This is very
@@ -93,22 +98,69 @@ static void prvSetupHardware( void );
  * Application entry point:
  * Starts all the other tasks, then starts the scheduler. 
  */
-/*Task toggle led every 1s*/
-void Toggle_Task( void * pvParameters )
+
+/*Function that send state of Button : if press button led will toggle
+                                        the action will take after release button
+                                         
+*/
+void Button_Task( void * pvParameters )
 {
  
 
     for( ;; )
     {
-			/*Toggle Led every 1s*/
-	 GPIO_write(PORT_0,PIN0,PIN_IS_LOW);
-	 vTaskDelay(1000);
-	 GPIO_write(PORT_0,PIN0,PIN_IS_HIGH);
-	 vTaskDelay(1000);
+		  g_status_Button = GPIO_read (PORT_0 , PIN0) ; /*read button status every 1ms*/
+			vTaskDelay(1);
     }
 }
 
 
+
+void Led_Task( void * pvParameters )
+{
+ 
+
+    for( ;; )
+    {
+			/*when button press 
+			                  save action
+			                 
+			*/
+			if(g_status_Button == PIN_IS_HIGH){
+				
+				g_Enter = 1 ;/*press button first*/
+			/*when button not pressed after pressing allow led taking action*/
+			}if(g_status_Button == PIN_IS_LOW && g_Enter == 1 ){
+				g_flag = 1 ;
+			}
+			vTaskDelay(1);
+    }
+		
+		
+}
+void Led_Action_Task( void * pvParameters )
+{
+ 
+
+    for( ;; )
+    {
+			/*after unpress button*/
+		if(g_flag==1){
+		     /*toggle pin*/
+				GPIO_write(PORT_0,PIN1,PIN_IS_HIGH);
+				vTaskDelay(100);
+				 GPIO_write(PORT_0,PIN1,PIN_IS_LOW);
+				vTaskDelay(100);
+			/*initialize flags to next action*/
+			  g_Enter = 0 ;
+			  g_flag=0;
+		}
+		vTaskDelay(1);
+	}
+		
+    }
+		
+		
 
 
 
@@ -120,22 +172,38 @@ int main( void )
 	
     /* Create Tasks here */
 	
-	/*Create Toggle_Task*/
+	/*Create Button_Task*/
+	
 	  xTaskCreate(
-                    Toggle_Task,       /* Function that implements the task. */
-                    "Toggle Task",          /* Text name for the task. */
+                    Button_Task,       /* Function that implements the task. */
+                    "Button Task",          /* Text name for the task. */
                     100,      /* Stack size in words, not bytes. */
                     ( void * ) 0,    /* Parameter passed into the task. */
                     1,/* Priority at which the task is created. */
-                    &Toggle_Task_Handdler );      /* Used to pass out the created task's handle. */
+                    &Button_Task_Handdler );      /* Used to pass out the created task's handle. */
+					
+					
+		/*Create Led_Task*/
+		xTaskCreate(
+                    Led_Task,       /* Function that implements the task. */
+                    "Led Task",          /* Text name for the task. */
+                    100,      /* Stack size in words, not bytes. */
+                    ( void * ) 0,    /* Parameter passed into the task. */
+                    1,/* Priority at which the task is created. */
+                    &Led_Task_Handdler );      /* Used to pass out the created task's handle. */
+					
+		/*Create Led_Task*/			
+		xTaskCreate(
+                    Led_Action_Task,       /* Function that implements the task. */
+                    "LedActionTask",          /* Text name for the task. */
+                    100,      /* Stack size in words, not bytes. */
+                    ( void * ) 0,    /* Parameter passed into the task. */
+                    1,/* Priority at which the task is created. */
+                    &Led_Action_Task_Handdler );      /* Used to pass out the created task's handle. */
 		
-		
- 										
-
-
-
 
 	/* Now all the tasks have been started - start the scheduler.
+
 	NOTE : Tasks run in system mode and the scheduler runs in Supervisor mode.
 	The processor MUST be in supervisor mode when vTaskStartScheduler is 
 	called.  The demo applications included in the FreeRTOS.org download switch
